@@ -1,0 +1,278 @@
+ <!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound528 — Плеер частот</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #fff;
+            padding: 20px;
+        }
+        .player {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 35px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            text-align: center;
+            width: 360px;
+            max-width: 100%;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin: 0 0 6px;
+            color: #4de89a;
+            letter-spacing: 0.5px;
+        }
+        .subtitle {
+            font-size: 13px;
+            color: #a0a0b0;
+            margin-bottom: 24px;
+        }
+
+        .freq-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .freq-btn {
+            padding: 12px 0;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .freq-btn:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .freq-btn.active {
+            background: #4de89a;
+            color: #111;
+            font-weight: bold;
+            border-color: #4de89a;
+            box-shadow: 0 0 20px rgba(77,232,154,0.4);
+        }
+        .freq-btn small {
+            display: block;
+            font-size: 10px;
+            opacity: 0.7;
+            font-weight: normal;
+            margin-top: 2px;
+        }
+        .freq-btn.active small { opacity: 0.85; }
+
+        .play-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: #4de89a;
+            color: #111;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .play-btn:hover {
+            background: #3ccf85;
+            transform: translateY(-1px);
+        }
+        .play-btn.playing {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        .play-btn.playing:hover { background: #e55a5a; }
+
+        .control-group {
+            text-align: left;
+            margin-bottom: 16px;
+        }
+        .control-group label {
+            font-size: 12px;
+            color: #b0b0c0;
+            display: block;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #4de89a;
+            height: 4px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        select option {
+            color: #000;
+            background: #fff;
+        }
+        .footer {
+            font-size: 10px;
+            color: #555;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="player">
+    <h1>Sound528</h1>
+    <div class="subtitle">Гармония и фокус</div>
+[15.09.2026 8:14] Nikolya: <div class="freq-buttons">
+        <button class="freq-btn" data-freq="432">432 Гц<small>Спокойствие</small></button>
+        <button class="freq-btn active" data-freq="528">528 Гц<small>Исцеление</small></button>
+        <button class="freq-btn" data-freq="639">639 Гц<small>Отношения</small></button>
+        <button class="freq-btn" data-freq="852">852 Гц<small>Интуиция</small></button>
+    </div>
+
+    <button class="play-btn" id="playBtn">▶ Включить</button>
+
+    <div class="control-group">
+        <label>Громкость — <span id="volValue">50%</span></label>
+        <input type="range" id="volume" min="0" max="100" value="50">
+    </div>
+
+    <div class="control-group">
+        <label>Таймер сна</label>
+        <select id="timer">
+            <option value="0">Бесконечно</option>
+            <option value="5">5 минут</option>
+            <option value="15">15 минут</option>
+            <option value="30">30 минут</option>
+            <option value="60">1 час</option>
+        </select>
+    </div>
+
+    <div class="footer">MVP · Sound528</div>
+</div>
+
+<script>
+    let audioCtx = null;
+    let oscillator = null;
+    let gainNode = null;
+    let isPlaying = false;
+    let currentFreq = 528;
+    let timerId = null;
+
+    const playBtn = document.getElementById('playBtn');
+    const volumeSlider = document.getElementById('volume');
+    const volValue = document.getElementById('volValue');
+    const timerSelect = document.getElementById('timer');
+    const freqButtons = document.querySelectorAll('.freq-btn');
+
+    freqButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            freqButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFreq = parseInt(btn.dataset.freq);
+            if (isPlaying && oscillator) {
+                oscillator.frequency.setTargetAtTime(
+                    currentFreq, audioCtx.currentTime, 0.05
+                );
+            }
+        });
+    });
+
+    volumeSlider.addEventListener('input', () => {
+        const v = volumeSlider.value;
+        volValue.textContent = v + '%';
+        if (gainNode) {
+            gainNode.gain.setTargetAtTime(
+                v / 100 * 0.5, audioCtx.currentTime, 0.05
+            );
+        }
+    });
+
+    playBtn.addEventListener('click', () => {
+        if (isPlaying) stopSound();
+        else startSound();
+    });
+
+    function startSound() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        oscillator = audioCtx.createOscillator();
+        gainNode = audioCtx.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.value = currentFreq;
+
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(
+            volumeSlider.value / 100 * 0.5,
+            audioCtx.currentTime + 1.5
+        );
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        isPlaying = true;
+        playBtn.textContent = '■ Остановить';
+        playBtn.classList.add('playing');
+
+        const minutes = parseInt(timerSelect.value);
+        if (minutes > 0) {
+            timerId = setTimeout(stopSound, minutes * 60 * 1000);
+        }
+    }
+
+    function stopSound() {
+        if (!oscillator) return;
+        const now = audioCtx.currentTime;
+
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+
+        const osc = oscillator;
+        const gain = gainNode;
+
+        setTimeout(() => {
+            try { osc.stop(); } catch(e) {}
+            try { osc.disconnect(); } catch(e) {}
+            try { gain.disconnect(); } catch(e) {}
+        }, 600);
+
+        oscillator = null;
+        gainNode = null;
+        isPlaying = false;
+        playBtn.textContent = '▶ Включить';
+        playBtn.classList.remove('playing');
+[15.09.2026 8:14] Nikolya: if (timerId) {
+            clearTimeout(timerId);
+            timerId = null;
+        }
+    }
+</script>
+
+</body>
+</html>
