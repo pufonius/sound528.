@@ -1,2 +1,19 @@
-# index.html
-MVP web-player for focus and relaxation using 528Hz frequency
+# Sound528
+
+Веб-плеер для генерации чистых тонов Solfeggio (432, 528, 639, 852 Гц).
+Использует Web Audio API, работает во всех современных браузерах.
+
+## Возможности
+
+- 4 целевые частоты (Solfeggio)
+- Плавное включение и выключение (без щелчков)
+- Регулировка громкости на лету
+- Таймер сна (5 / 15 / 30 / 60 минут)
+
+## Запуск
+
+Открыть сайт: [pufonius.github.io/sound528](https://pufonius.github.io/sound528/)
+
+## Технологии
+
+Чистый HTML + CSS + JavaScript, без зависимостей.
