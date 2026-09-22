@@ -1,4 +1,4 @@
-const CACHE_NAME = "sound528-v4";
+const CACHE_NAME = "sound528-v5";
 const ASSETS = [
   "./",
   "./index.html",
