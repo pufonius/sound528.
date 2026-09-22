@@ -179,11 +179,18 @@
         <label>Громкость — <span id="volValue">50%</span></label>
         <input type="range" id="volume" min="0" max="100" value="50">
     </div>
-
     <div class="control-group">
-        <label>Таймер сна</label>
-        <select id="timer">
-            <div class="control-group nature">
+    <label>Таймер сна</label>
+    <select id="timer">
+        <option value="0">Бесконечно</option>
+        <option value="5">5 минут</option>
+        <option value="15">15 минут</option>
+        <option value="30">30 минут</option>
+        <option value="60">1 час</option>
+    </select>
+</div>
+
+<div class="control-group nature">
     <label>Звуки природы</label>
     <div class="nature-row">
         <input type="checkbox" id="rain-on">
@@ -201,13 +208,6 @@
         <input type="range" id="forest-vol" min="0" max="100" value="50">
     </div>
 </div>
-            <option value="0">Бесконечно</option>
-            <option value="5">5 минут</option>
-            <option value="15">15 минут</option>
-            <option value="30">30 минут</option>
-            <option value="60">1 час</option>
-        </select>
-    </div>
 
     <div class="footer">MVP · Sound528</div>
 </div>
