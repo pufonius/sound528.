@@ -198,14 +198,14 @@
         <input type="range" id="rain-vol" min="0" max="100" value="50">
     </div>
     <div class="nature-row">
-        <input type="checkbox" id="ocean-on">
-        <span class="nature-name">Океан</span>
-        <input type="range" id="ocean-vol" min="0" max="100" value="50">
-    </div>
-    <div class="nature-row">
         <input type="checkbox" id="forest-on">
         <span class="nature-name">Лес</span>
         <input type="range" id="forest-vol" min="0" max="100" value="50">
+    </div>
+    <div class="nature-row">
+        <input type="checkbox" id="fire-on">
+        <span class="nature-name">Костёр</span>
+        <input type="range" id="fire-vol" min="0" max="100" value="50">
     </div>
 </div>
 
@@ -227,9 +227,10 @@
     const freqButtons = document.querySelectorAll('.freq-btn');
     // Звуки природы
 const nature = {
+   const nature = {
     rain:   { el: new Audio("rain.mp3"),   on: false, vol: 50 },
-    ocean:  { el: new Audio("ocean.mp3"),  on: false, vol: 50 },
-    forest: { el: new Audio("forest.mp3"), on: false, vol: 50 }
+    forest: { el: new Audio("forest.mp3"), on: false, vol: 50 },
+    fire:   { el: new Audio("fire.mp3"),   on: false, vol: 50 }
 };
 
 Object.keys(nature).forEach(key => {
