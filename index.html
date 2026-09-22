@@ -316,15 +316,16 @@ function fadeNature(item) {
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
 
-        oscillator.start();
-        Object.values(nature).forEach(item => {
-    if (item.on) {
+       oscillator.start();
+       isPlaying = true;
+
+       Object.values(nature).forEach(item => {
+       if (item.on) {
         item.el.play().catch(e => console.warn(e));
     }
-    fadeNature(item);
+       fadeNature(item);
 });
-        isPlaying = true;
-        playBtn.textContent = '■ Остановить';
+             playBtn.textContent = '■ Остановить';
         playBtn.classList.add('playing');
 
         const minutes = parseInt(timerSelect.value);
