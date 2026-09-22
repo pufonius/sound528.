@@ -139,6 +139,27 @@
             color: #555;
             margin-top: 15px;
         }
+        .nature-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.nature-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #4de89a;
+    cursor: pointer;
+}
+.nature-name {
+    flex: 1;
+    font-size: 13px;
+    color: #ddd;
+}
+.nature-row input[type="range"] {
+    flex: 1;
+    height: 4px;
+}
     </style>
 </head>
 <body>
@@ -162,6 +183,24 @@
     <div class="control-group">
         <label>Таймер сна</label>
         <select id="timer">
+            <div class="control-group nature">
+    <label>Звуки природы</label>
+    <div class="nature-row">
+        <input type="checkbox" id="rain-on">
+        <span class="nature-name">Дождь</span>
+        <input type="range" id="rain-vol" min="0" max="100" value="50">
+    </div>
+    <div class="nature-row">
+        <input type="checkbox" id="ocean-on">
+        <span class="nature-name">Океан</span>
+        <input type="range" id="ocean-vol" min="0" max="100" value="50">
+    </div>
+    <div class="nature-row">
+        <input type="checkbox" id="forest-on">
+        <span class="nature-name">Лес</span>
+        <input type="range" id="forest-vol" min="0" max="100" value="50">
+    </div>
+</div>
             <option value="0">Бесконечно</option>
             <option value="5">5 минут</option>
             <option value="15">15 минут</option>
@@ -186,6 +225,47 @@
     const volValue = document.getElementById('volValue');
     const timerSelect = document.getElementById('timer');
     const freqButtons = document.querySelectorAll('.freq-btn');
+    // Звуки природы
+const nature = {
+    rain:   { el: new Audio("rain.mp3"),   on: false, vol: 50 },
+    ocean:  { el: new Audio("ocean.mp3"),  on: false, vol: 50 },
+    forest: { el: new Audio("forest.mp3"), on: false, vol: 50 }
+};
+
+Object.keys(nature).forEach(key => {
+    const item = nature[key];
+    item.el.loop = true;
+    item.el.volume = 0;
+    item.el.preload = "auto";
+
+    const toggle = document.getElementById(key + "-on");
+    const slider = document.getElementById(key + "-vol");
+
+    toggle.addEventListener("change", () => {
+        item.on = toggle.checked;
+        if (item.on && isPlaying) {
+            item.el.play().catch(e => console.warn("Nature play error:", e));
+        } else if (!item.on) {
+            item.el.pause();
+        }
+        fadeNature(item);
+    });
+
+    slider.addEventListener("input", () => {
+        item.vol = parseInt(slider.value);
+        fadeNature(item);
+    });
+});
+
+function fadeNature(item) {
+    const target = item.on && isPlaying ? item.vol / 100 : 0;
+    const step = (target - item.el.volume) / 20;
+    let i = 0;
+    const timer = setInterval(() => {
+        item.el.volume = Math.max(0, Math.min(1, item.el.volume + step));
+        if (++i >= 20) clearInterval(timer);
+    }, 30);
+}
 
     freqButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -237,6 +317,12 @@
         gainNode.connect(audioCtx.destination);
 
         oscillator.start();
+        Object.values(nature).forEach(item => {
+    if (item.on) {
+        item.el.play().catch(e => console.warn(e));
+    }
+    fadeNature(item);
+});
         isPlaying = true;
         playBtn.textContent = '■ Остановить';
         playBtn.classList.add('playing');
@@ -254,7 +340,12 @@
         gainNode.gain.cancelScheduledValues(now);
         gainNode.gain.setValueAtTime(gainNode.gain.value, now);
         gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
-
+Object.values(nature).forEach(item => {
+    item.on = false;
+    document.getElementById(Object.keys(nature)
+        .find(k => nature[k] === item) + "-on").checked = false;
+    item.el.pause();
+});
         const osc = oscillator;
         const gain = gainNode;
 
